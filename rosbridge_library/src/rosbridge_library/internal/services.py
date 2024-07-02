@@ -146,7 +146,8 @@ def call_service(
         raise InvalidServiceException(service)
 
     future = client.call_async(inst)
-    while rclpy.ok() and not future.done():
+    start = time.time()
+    while rclpy.ok() and not future.done() and time.time() - start < server_timeout_time:
         time.sleep(sleep_time)
     result = future.result()
 
