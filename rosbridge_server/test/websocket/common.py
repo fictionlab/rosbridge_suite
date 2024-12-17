@@ -6,7 +6,6 @@ import launch
 import launch_ros
 import rclpy
 import rclpy.task
-
 from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
 from launch.launch_description import LaunchDescription
 from rcl_interfaces.srv import GetParameters
