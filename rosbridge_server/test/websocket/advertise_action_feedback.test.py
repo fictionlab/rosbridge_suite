@@ -2,7 +2,6 @@
 import os
 import sys
 import unittest
-from typing import Any
 
 from action_msgs.msg import GoalStatus
 from example_interfaces.action import Fibonacci
