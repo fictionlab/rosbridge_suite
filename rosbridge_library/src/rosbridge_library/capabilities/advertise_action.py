@@ -51,9 +51,9 @@ class AdvertisedActionHandler:
     def __init__(
         self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
     ) -> None:
-        self.goal_futures = {}
-        self.goal_handles = {}
-        self.goal_statuses = {}
+        self.goal_futures: dict[str, rclpy.task.Future] = {}
+        self.goal_handles: dict[str, Any] = {}
+        self.goal_statuses: dict[str, GoalStatus] = {}
 
         self.action_name = action_name
         self.action_type = action_type
