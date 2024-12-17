@@ -25,6 +25,7 @@ class TestActionFeedback(unittest.TestCase):
 
     def goal_response_callback(self, future: Future):
         goal_handle = future.result()
+        assert goal_handle is not None
         if not goal_handle.accepted:
             return
         self.goal_result_future = goal_handle.get_result_async()

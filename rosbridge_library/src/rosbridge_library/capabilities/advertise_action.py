@@ -38,6 +38,7 @@ from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
 from rclpy.action.server import CancelResponse, ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.task import Future
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_action_class
@@ -51,7 +52,7 @@ class AdvertisedActionHandler:
     def __init__(
         self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
     ) -> None:
-        self.goal_futures: dict[str, rclpy.task.Future] = {}
+        self.goal_futures: dict[str, Future] = {}
         self.goal_handles: dict[str, Any] = {}
         self.goal_statuses: dict[str, GoalStatus] = {}
 
@@ -79,7 +80,7 @@ class AdvertisedActionHandler:
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
-        def done_callback(fut: rclpy.task.Future) -> None:
+        def done_callback(fut: Future) -> None:
             if fut.cancelled():
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
@@ -94,7 +95,7 @@ class AdvertisedActionHandler:
                 else:
                     goal.abort()
 
-        future = rclpy.task.Future()
+        future: Future = Future()
         future.add_done_callback(done_callback)
         self.goal_handles[goal_id] = goal
         self.goal_futures[goal_id] = future

@@ -11,6 +11,7 @@ from launch.launch_description import LaunchDescription
 from rcl_interfaces.srv import GetParameters
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
+from rclpy.task import Future
 from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
@@ -24,7 +25,7 @@ class TestClientProtocol(WebSocketClientProtocol):
 
     def __init__(self, *args, **kwargs):
         self.received = []
-        self.connected_future = rclpy.task.Future()
+        self.connected_future = Future()
         self.message_handler = lambda _: None
         super().__init__(*args, **kwargs)
 
@@ -87,6 +88,7 @@ async def get_server_port(node: Node) -> int:
         if not client.wait_for_service(5):
             raise RuntimeError("GetParameters service not available")
         port_param = await client.call_async(GetParameters.Request(names=["actual_port"]))
+        assert port_param is not None
         return port_param.values[0].integer_value
     finally:
         node.destroy_client(client)
@@ -97,9 +99,10 @@ async def connect_to_server(node: Node) -> TestClientProtocol:
     factory = WebSocketClientFactory("ws://127.0.0.1:" + str(port))
     factory.protocol = TestClientProtocol
 
-    future = rclpy.task.Future()
-    assert node.executor is not None
-    future.add_done_callback(lambda _: node.executor.wake())
+    future: Future = Future()
+    executor = node.executor
+    assert executor is not None
+    future.add_done_callback(lambda _: executor.wake())
 
     def connect():
         TCP4ClientEndpoint(reactor, "127.0.0.1", port).connect(factory).addCallback(
@@ -108,8 +111,9 @@ async def connect_to_server(node: Node) -> TestClientProtocol:
 
     reactor.callFromThread(connect)  # type: ignore[attr-defined]
 
-    protocol = await future
-    protocol.connected_future.add_done_callback(lambda _: node.executor.wake())
+    protocol: TestClientProtocol | None = await future
+    assert protocol is not None
+    protocol.connected_future.add_done_callback(lambda _: executor.wake())
     await protocol.connected_future  # wait for onOpen before proceeding
     return protocol
 
@@ -142,7 +146,7 @@ def sleep(node: Node, duration: float) -> Awaitable[None]:
     """
     Async-compatible delay function based on a ROS timer.
     """
-    future = rclpy.task.Future()
+    future: Future = Future()
 
     def callback():
         future.set_result(None)
@@ -171,7 +175,7 @@ def expect_messages(count: int, description: str, logger):
     Convenience function to create a Future and a message handler function which gathers results
     into a list and waits for the list to have the expected number of items.
     """
-    future = rclpy.Future()
+    future: Future = Future()
     results = []
 
     def handler(msg):
