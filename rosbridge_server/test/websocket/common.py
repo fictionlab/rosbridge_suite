@@ -2,10 +2,12 @@ import functools
 import json
 from typing import Any, Awaitable, Callable
 
+from launch.launch_description import LaunchDescription
 import launch
 import launch_ros
 import rclpy
 import rclpy.task
+
 from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
 from rcl_interfaces.srv import GetParameters
 from rclpy.executors import SingleThreadedExecutor
@@ -60,19 +62,19 @@ def _generate_node():
 try:
     from launch_testing.actions import ReadyToTest
 
-    def generate_test_description() -> launch.LaunchDescription:
+    def generate_test_description() -> LaunchDescription:
         """
         Generate a launch description that runs the websocket server. Re-export this from a test file and use add_launch_test() to run the test.
         """
-        return launch.LaunchDescription([_generate_node(), ReadyToTest()])
+        return LaunchDescription([_generate_node(), ReadyToTest()])
 
 except ImportError:
 
-    def generate_test_description(ready_fn) -> launch.LaunchDescription:
+    def generate_test_description(ready_fn) -> LaunchDescription:  # type: ignore[misc]
         """
         Generate a launch description that runs the websocket server. Re-export this from a test file and use add_launch_test() to run the test.
         """
-        return launch.LaunchDescription(
+        return LaunchDescription(
             [_generate_node(), launch.actions.OpaqueFunction(function=lambda context: ready_fn())]
         )
 
@@ -97,6 +99,7 @@ async def connect_to_server(node: Node) -> TestClientProtocol:
     factory.protocol = TestClientProtocol
 
     future = rclpy.task.Future()
+    assert node.executor is not None
     future.add_done_callback(lambda _: node.executor.wake())
 
     def connect():
@@ -104,7 +107,7 @@ async def connect_to_server(node: Node) -> TestClientProtocol:
             future.set_result
         )
 
-    reactor.callFromThread(connect)
+    reactor.callFromThread(connect)  # type: ignore[attr-defined]
 
     protocol = await future
     protocol.connected_future.add_done_callback(lambda _: node.executor.wake())
@@ -128,8 +131,8 @@ def run_websocket_test(
 
     future = executor.create_task(task)
 
-    reactor.callInThread(executor.spin_until_future_complete, future)
-    reactor.run(installSignalHandlers=False)
+    reactor.callInThread(executor.spin_until_future_complete, future)  # type: ignore[attr-defined]
+    reactor.run(installSignalHandlers=False)  # type: ignore[attr-defined]
 
     executor.remove_node(node)
     node.destroy_node()
