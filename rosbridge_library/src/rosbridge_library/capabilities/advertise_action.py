@@ -33,7 +33,6 @@
 import fnmatch
 from typing import Any
 
-import rclpy
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
 from rclpy.action.server import CancelResponse, ServerGoalHandle
