@@ -58,8 +58,7 @@ class ServiceCaller(Thread):
         self,
         service: str,
         args: dict,
-        server_ready_timeout: float,
-        server_response_timeout: float,
+        timeout: float,
         success_callback: Callable[[dict], None],
         error_callback: Callable[[Exception], None],
         node_handle: Node,
@@ -73,8 +72,7 @@ class ServiceCaller(Thread):
         ordered list, or a dict of name-value pairs.  Anything else will be
         treated as though no arguments were provided (which is still valid for
         some kinds of service)
-        server_ready_timeout -- the time, in seconds, to wait for the server to become ready
-        server_response_timeout -- the time, in seconds, to wait for a response from the server
+        timeout -- the time, in seconds, to wait for a response from the server
         success_callback -- a callback to call with the JSON result of the
         service call
         error_callback   -- a callback to call if an error occurs.  The
@@ -85,8 +83,7 @@ class ServiceCaller(Thread):
         self.daemon = True
         self.service = service
         self.args = args
-        self.server_ready_timeout = server_ready_timeout
-        self.server_response_timeout = server_response_timeout
+        self.timeout = timeout
         self.success = success_callback
         self.error = error_callback
         self.node_handle = node_handle
@@ -99,7 +96,7 @@ class ServiceCaller(Thread):
                     self.node_handle,
                     self.service,
                     args=self.args,
-                    server_ready_timeout=self.server_ready_timeout,
+                    server_response_timeout=self.timeout,
                 )
             )
         except Exception as e:
@@ -128,7 +125,7 @@ def call_service(
     service: str,
     args: Optional[dict] = None,
     server_ready_timeout: float = 1.0,
-    server_response_timeout: float = 1.0,
+    server_response_timeout: float = 5.0,
     sleep_time: float = 0.001,
 ) -> dict:
     # Given the service name, fetch the type and class of the service,

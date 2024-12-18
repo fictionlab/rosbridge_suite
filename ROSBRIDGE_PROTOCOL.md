@@ -437,8 +437,7 @@ Calls a ROS service.
   (optional) "args": <list<json>>,
   (optional) "fragment_size": <int>,
   (optional) "compression": <string>,
-  (optional) "server_ready_timeout": <float>,
-  (optional) "server_response_timeout": <float>
+  (optional) "timeout": <float>
 }
 ```
 
@@ -451,8 +450,7 @@ Calls a ROS service.
     before it is fragmented
  * **compression** – an optional string to specify the compression scheme to be
     used on messages. Valid values are "none" and "png"
- * **server_ready_timeout** – the time, in seconds, to wait for the server to become ready
- * **server_response_timeout** – the time, in seconds, to wait for a response from the server
+ * **timeout** – the time, in seconds, to wait for a response from the server
 
 
 Stops advertising an external ROS service server
