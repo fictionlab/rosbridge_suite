@@ -23,6 +23,7 @@
   <arg name="topics_glob" default="" />
   <arg name="services_glob" default="" />
   <arg name="params_glob" default="" />
+  <arg name="params_timeout" default="5.0" />
   <arg name="bson_only_mode" default="false" />
 
   <arg name="respawn" default="false"/>
@@ -78,5 +79,6 @@
     <param name="topics_glob" value="$(var topics_glob)"/>
     <param name="services_glob" value="$(var services_glob)"/>
     <param name="params_glob" value="$(var params_glob)"/>
+    <param name="params_timeout" value="$(var params_timeout)"/>
   </node>
 </launch>
